@@ -18,8 +18,8 @@ def train_loop(net, data_loader, n_iter):
     for rain, norain, name in train_bar:
         rain, norain = rain.cuda(), norain.cuda()
         b_0, list_b, list_r = net(rain)
-        loss_bs = torch.stack([F.mse_loss(list_b[i], norain) for i in range(args.num_stage)]).sum()
-        loss_rs = torch.stack([F.mse_loss(list_r[i], rain - norain) for i in range(args.num_stage)]).sum()
+        loss_bs = torch.stack([F.mse_loss(list_b[i], norain) for i in range(args.expansion_factor)]).sum()
+        loss_rs = torch.stack([F.mse_loss(list_r[i], rain - norain) for i in range(args.expansion_factor)]).sum()
         loss_b = F.mse_loss(list_b[-1], norain)
         loss_r = F.mse_loss(list_r[-1], rain - norain)
         loss_b0 = F.mse_loss(b_0, norain)
@@ -81,7 +81,7 @@ if __name__ == '__main__':
     test_loader = DataLoader(test_dataset, batch_size=1, shuffle=False, num_workers=args.workers)
 
     results, best_psnr, best_ssim = {'PSNR': [], 'SSIM': []}, 0.0, 0.0
-    model = RCDNet(args.num_map, args.num_channel, args.num_block, args.num_stage).cuda()
+    model = RCDNet(args.num_blocks, args.num_heads, args.channels, args.expansion_factor).cuda()
     if args.model_file:
         model.load_state_dict(torch.load(args.model_file))
         save_loop(model, test_loader, 1)

@@ -14,22 +14,28 @@ from torchvision.transforms import RandomCrop
 
 
 def parse_args():
-    desc = 'Pytorch Implementation of \'RCDNet: A Model-driven Deep Neural Network for Single Image Rain Removal\''
+    desc = 'Pytorch Implementation of \'Restormer: Efficient Transformer for High-Resolution Image Restoration\''
     parser = argparse.ArgumentParser(description=desc)
     parser.add_argument('--data_path', type=str, default='/home/data')
-    parser.add_argument('--data_name', type=str, default='rain100L',
-                        choices=['rain100L', 'rain100H', 'rain1400', 'spa'])
+    parser.add_argument('--data_name', type=str, default='rain100L', choices=['rain100L', 'rain100H'])
     parser.add_argument('--save_path', type=str, default='result')
-    parser.add_argument('--num_map', type=int, default=32, help='number of rain maps')
-    parser.add_argument('--num_channel', type=int, default=32, help='number of channels')
-    parser.add_argument('--num_block', type=int, default=4, help='number of res blocks in each ProxNet')
-    parser.add_argument('--num_stage', type=int, default=17, help='number of iterative stages')
-    parser.add_argument('--num_iter', type=int, default=100, help='epoch of training')
-    parser.add_argument('--batch_size', type=int, default=16, help='batch size of loading images')
-    parser.add_argument('--patch_size', type=int, default=64, help='patch size of each image')
-    parser.add_argument('--lr', type=float, default=0.001, help='initial learning rate')
-    parser.add_argument('--milestone', nargs='+', type=int, default=[25, 50, 75], help='when to decay learning rate')
-    parser.add_argument('--workers', type=int, default=4, help='number of data loading workers')
+    parser.add_argument('--num_blocks', nargs='+', type=int, default=[4, 6, 6, 8],
+                        help='number of transformer blocks for each level')
+    parser.add_argument('--num_heads', nargs='+', type=int, default=[1, 2, 4, 8],
+                        help='number of attention heads for each level')
+    parser.add_argument('--channels', nargs='+', type=int, default=[48, 96, 192, 384],
+                        help='number of channels for each level')
+    parser.add_argument('--expansion_factor', type=float, default=2.66, help='factor of channel expansion for GDFN')
+    parser.add_argument('--num_refinement', type=int, default=4, help='number of channels for refinement stage')
+    parser.add_argument('--num_iter', type=int, default=300000, help='iterations of training')
+    parser.add_argument('--batch_size', nargs='+', type=int, default=[64, 40, 32, 16, 8, 8],
+                        help='batch size of loading images for progressive learning')
+    parser.add_argument('--patch_size', nargs='+', type=int, default=[128, 160, 192, 256, 320, 384],
+                        help='patch size of each image for progressive learning')
+    parser.add_argument('--lr', type=float, default=0.0003, help='initial learning rate')
+    parser.add_argument('--milestone', nargs='+', type=int, default=[92000, 156000, 204000, 240000, 276000],
+                        help='when to change patch size and batch size')
+    parser.add_argument('--workers', type=int, default=8, help='number of data loading workers')
     parser.add_argument('--seed', type=int, default=-1, help='random seed (-1 for no manual seed)')
     # model_file is None means training stage, else means testing stage
     parser.add_argument('--model_file', type=str, default=None, help='path of pre-trained model file')
@@ -42,10 +48,11 @@ class Config(object):
         self.data_path = args.data_path
         self.data_name = args.data_name
         self.save_path = args.save_path
-        self.num_map = args.num_map
-        self.num_channel = args.num_channel
-        self.num_block = args.num_block
-        self.num_stage = args.num_stage
+        self.num_blocks = args.num_blocks
+        self.num_heads = args.num_heads
+        self.channels = args.channels
+        self.expansion_factor = args.expansion_factor
+        self.num_refinement = args.num_refinement
         self.num_iter = args.num_iter
         self.batch_size = args.batch_size
         self.patch_size = args.patch_size
@@ -95,6 +102,9 @@ class RainDataset(Dataset):
             if torch.rand(1) < 0.5:
                 rain = T.hflip(rain)
                 norain = T.hflip(norain)
+            if torch.rand(1) < 0.5:
+                rain = T.vflip(rain)
+                norain = T.vflip(norain)
         return rain, norain, image_name
 
 
