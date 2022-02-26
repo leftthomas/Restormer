@@ -19,7 +19,7 @@ def train_loop(net, data_loader, num_iter):
     for rain, norain, name, h, w in train_bar:
         rain, norain = rain.cuda(), norain.cuda()
         out = net(rain)
-        loss = F.mse_loss(out, norain)
+        loss = F.l1_loss(out, norain)
 
         optimizer.zero_grad()
         loss.backward()
