@@ -31,7 +31,7 @@ def test_loop(net, data_loader, num_iter):
             save_path = '{}/{}/{}'.format(args.save_path, args.data_name, name[0])
             if not os.path.exists(os.path.dirname(save_path)):
                 os.makedirs(os.path.dirname(save_path))
-            Image.fromarray(out.squeeze(dim=0).permute(1, 2, 0).cpu().numpy()).save(save_path)
+            Image.fromarray(out.squeeze(dim=0).permute(1, 2, 0).contiguous().cpu().numpy()).save(save_path)
             test_bar.set_description('Test Iter: [{}/{}] PSNR: {:.2f} SSIM: {:.3f}'
                                      .format(num_iter, 1 if args.model_file else args.num_iter,
                                              total_psnr / count, total_ssim / count))

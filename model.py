@@ -17,13 +17,13 @@ class MDTA(nn.Module):
         b, c, h, w = x.shape
         q, k, v = self.qkv_conv(self.qkv(x)).chunk(3, dim=1)
 
-        q = q.view(b, c, -1).view(b, self.num_heads, -1, h * w)
-        k = k.view(b, c, -1).view(b, self.num_heads, -1, h * w)
-        v = v.view(b, c, -1).view(b, self.num_heads, -1, h * w)
+        q = q.reshape(b, self.num_heads, -1, h * w)
+        k = k.reshape(b, self.num_heads, -1, h * w)
+        v = v.reshape(b, self.num_heads, -1, h * w)
         q, k = F.normalize(q, dim=-1), F.normalize(k, dim=-1)
 
-        attn = torch.softmax(torch.matmul(q, k.transpose(-2, -1)) * self.temperature, dim=-1)
-        out = self.project_out(torch.matmul(attn, v).view(b, -1, h * w).view(b, -1, h, w))
+        attn = torch.softmax(torch.matmul(q, k.transpose(-2, -1).contiguous()) * self.temperature, dim=-1)
+        out = self.project_out(torch.matmul(attn, v).reshape(b, -1, h, w))
         return out
 
 
@@ -54,8 +54,10 @@ class TransformerBlock(nn.Module):
 
     def forward(self, x):
         b, c, h, w = x.shape
-        x = x + self.attn(self.norm1(x.view(b, c, -1).transpose(-2, -1)).transpose(-2, -1).view(b, c, h, w))
-        x = x + self.ffn(self.norm2(x.view(b, c, -1).transpose(-2, -1)).transpose(-2, -1).view(b, c, h, w))
+        x = x + self.attn(self.norm1(x.reshape(b, c, -1).transpose(-2, -1).contiguous()).transpose(-2, -1)
+                          .contiguous().reshape(b, c, h, w))
+        x = x + self.ffn(self.norm2(x.reshape(b, c, -1).transpose(-2, -1).contiguous()).transpose(-2, -1)
+                         .contiguous().reshape(b, c, h, w))
         return x
 
 
