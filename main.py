@@ -16,7 +16,7 @@ from utils import parse_args, RainDataset, rgb_to_y, psnr, ssim
 def train_loop(net, data_loader, num_iter):
     net.train()
     total_loss, total_num, train_bar = 0.0, 0, tqdm(data_loader, initial=1, dynamic_ncols=True)
-    for rain, norain, name in train_bar:
+    for rain, norain, name, h, w in train_bar:
         rain, norain = rain.cuda(), norain.cuda()
         out = net(rain)
         loss = F.mse_loss(out, norain)
@@ -36,9 +36,9 @@ def test_loop(net, data_loader, num_iter):
     total_psnr, total_ssim, count = 0.0, 0.0, 0
     with torch.no_grad():
         test_bar = tqdm(data_loader, initial=1, dynamic_ncols=True)
-        for rain, norain, name in test_bar:
+        for rain, norain, name, h, w in test_bar:
             rain, norain = rain.cuda(), norain.cuda()
-            out = torch.clamp(model(rain), 0, 255).byte()
+            out = torch.clamp((torch.clamp(model(rain)[:, :, :h, :w], 0, 1).mul(255)), 0, 255).byte()
             # computer the metrics with Y channel and double precision
             y, gt = rgb_to_y(out.double()), rgb_to_y(norain.double())
             current_psnr, current_ssim = psnr(y, gt), ssim(y, gt)
