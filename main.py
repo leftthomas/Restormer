@@ -9,7 +9,6 @@ from torch.optim.lr_scheduler import MultiStepLR
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-from model import RCDNet
 from utils import parse_args, RainDataset, rgb_to_y, psnr, ssim
 
 
