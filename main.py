@@ -21,6 +21,7 @@ def test_loop(net, data_loader, num_iter):
         for rain, norain, name, h, w in test_bar:
             rain, norain = rain.cuda(), norain.cuda()
             out = torch.clamp((torch.clamp(model(rain)[:, :, :h, :w], 0, 1).mul(255)), 0, 255).byte()
+            norain = torch.clamp(norain[:, :, :h, :w].mul(255), 0, 255).byte()
             # computer the metrics with Y channel and double precision
             y, gt = rgb_to_y(out.double()), rgb_to_y(norain.double())
             current_psnr, current_ssim = psnr(y, gt), ssim(y, gt)
