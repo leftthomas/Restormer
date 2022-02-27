@@ -54,7 +54,8 @@ python main.py --data_name rain100H --model_file result/rain100H.pth
 
 ## Benchmarks
 
-The models are trained on one NVIDIA GeForce RTX 3090 GPU (24G). All the hyper-parameters are the default values.
+The models are trained on one NVIDIA RTX A6000 GPU (48G). `num_iter` is `30,000`, `seed` is `1` and `milestone` is
+`[9200, 15600, 20400, 24000, 27600]`, the other hyper-parameters are the default values.
 
 <table>
 <thead>
@@ -74,11 +75,19 @@ The models are trained on one NVIDIA GeForce RTX 3090 GPU (24G). All the hyper-p
 <tbody>
   <tr>
     <td align="center">Ours</td>
-    <td align="center"><b> </b></td>
-    <td align="center"><b> </b></td>
-    <td align="center"><b> </b></td>
-    <td align="center"><b> </b></td>
-    <td align="center"><a href="https://mega.nz/folder/t4wi1QhZ#zhr0_u0_vr4bD9xDTwFuig">MEGA</a></td>
+    <td align="center">39.94</td>
+    <td align="center">0.986</td>
+    <td align="center">30.80</td>
+    <td align="center">0.903</td>
+    <td align="center"><a href="https://mega.nz/folder/z0MzBKLS#eTIvPM6UDNjFAQUOqQ0eKw">MEGA</a></td>
+  </tr>
+  <tr>
+    <td align="center">Ours*</td>
+    <td align="center"><b>39.98</b></td>
+    <td align="center"><b>0.987</b></td>
+    <td align="center"><b>31.96</b></td>
+    <td align="center"><b>0.916</b></td>
+    <td align="center"><a href="https://mega.nz/folder/61kmTKRY#RuGbKVF9Hngf27jumDmjIQ">MEGA</a></td>
   </tr>
   <tr>
     <td align="center">Official</td>
@@ -91,8 +100,15 @@ The models are trained on one NVIDIA GeForce RTX 3090 GPU (24G). All the hyper-p
 </tbody>
 </table>
 
+Due to the huge demand for GPU memory, we have to reduce the `batch_size` and `patch_size`:
+
+`Ours`: `batch_size` is `[64, 40, 32, 16, 8, 8]` and `patch_size` is `[32, 40, 48, 64, 80, 96]`;
+
+`Ours*`: `batch_size` is `[32, 20, 16, 8, 4, 4]` and `patch_size` is `[64, 80, 96, 128, 160, 192]`.
+
 ## Results
 
-More results could be downloaded from [MEGA](https://mega.nz/folder/GhlDjSpT#74Yn-cUwsfHKXGmD-PzXkg).
+More results could be downloaded from [MEGA](https://mega.nz/folder/qglyxAwB#2hgvj4o-NwCZVfcTuKFkFg). Here we give some
+examples for `Ours*`.
 
 ![vis](result/vis.png)
