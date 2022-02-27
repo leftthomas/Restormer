@@ -65,7 +65,7 @@ if __name__ == '__main__':
         save_loop(model, test_loader, 1)
     else:
         optimizer = AdamW(model.parameters(), lr=args.lr, weight_decay=1e-4)
-        lr_scheduler = CosineAnnealingLR(optimizer, T_max=args.num_iter)
+        lr_scheduler = CosineAnnealingLR(optimizer, T_max=args.num_iter, eta_min=1e-6)
         total_loss, total_num, results['Loss'], i = 0.0, 0, [], 0
         train_bar = tqdm(range(1, args.num_iter + 1), initial=1, dynamic_ncols=True)
         for n_iter in train_bar:
