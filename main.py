@@ -71,7 +71,9 @@ if __name__ == '__main__':
         for n_iter in train_bar:
             # progressive learning
             if n_iter == 1 or n_iter - 1 in args.milestone:
-                length = args.batch_size[i] * (args.milestone[i] - (args.milestone[i - 1] if i > 0 else 0))
+                end_iter = args.milestone[i] if i < len(args.milestone) else args.num_iter
+                start_iter = args.milestone[i - 1] if i > 0 else 0
+                length = args.batch_size[i] * (end_iter - start_iter)
                 train_dataset = RainDataset(args.data_path, args.data_name, 'train', args.patch_size[i], length)
                 train_loader = iter(DataLoader(train_dataset, args.batch_size[i], True, num_workers=args.workers))
                 i += 1
